@@ -144,7 +144,25 @@ export function createMeasureClass<N>(num: NumericOperations<N>): GenericMeasure
 
         public toString(formatter?: MeasureFormatter<N>): string {
             const { formatValue, formatUnit } = getFormatter(formatter);
-            return `${formatValue(this.value)} ${formatUnit(this.unit, this.unitSystem)}`.trimRight();
+            const unitFormatResult = formatUnit(this.unit, this.unitSystem);
+
+            let unitStr: string;
+            let displayInFront: boolean;
+            if (typeof unitFormatResult === "string") {
+                unitStr = unitFormatResult;
+                displayInFront = false;
+            } else {
+                unitStr = unitFormatResult.unitStr;
+                displayInFront = unitFormatResult.displayInFront;
+            }
+
+            if (displayInFront) {
+                // Units displayed in front typically shouldn't have a space before the number
+                return `${unitStr}${formatValue(this.value)}`;
+            } else {
+                // Units displayed in back typically have a space before the unit
+                return `${formatValue(this.value)} ${unitStr}`.trimRight();
+            }
         }
 
         public in(unit: GenericMeasure<N, Basis, U>, formatter?: MeasureFormatter<N>): string {
@@ -153,8 +171,24 @@ export function createMeasureClass<N>(num: NumericOperations<N>): GenericMeasure
             }
             const { formatValue } = getFormatter(formatter);
             const value = formatValue(num.div(this.value, unit.value));
-            const symbolStr: string = typeof unit.symbol === "string" ? unit.symbol : unit.symbol.symbol;
-            return `${value} ${symbolStr}`;
+
+            let unitStr: string;
+            let displayInFront: boolean;
+            if (typeof unit.symbol === "string") {
+                unitStr = unit.symbol;
+                displayInFront = false;
+            } else {
+                unitStr = unit.symbol.symbol;
+                displayInFront = unit.symbol.displayInFront;
+            }
+
+            if (displayInFront) {
+                // Units displayed in front typically shouldn't have a space before the number
+                return `${unitStr}${value}`;
+            } else {
+                // Units displayed in back typically have a space before the unit
+                return `${value} ${unitStr}`;
+            }
         }
 
         public valueIn(unit: GenericMeasure<N, Basis, U>): N {

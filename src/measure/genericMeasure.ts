@@ -3,7 +3,15 @@ import { CubeUnit, DivideUnits, MultiplyUnits, ReciprocalUnit, SquareUnit, Unit 
 
 export interface MeasureFormatter<N> {
     formatValue?: (value: N) => string;
-    formatUnit?: <Basis extends BasisType>(unit: Unit<Basis>, unitSystem: UnitSystem<Basis>) => string;
+    formatUnit?: <Basis extends BasisType>(
+        unit: Unit<Basis>,
+        unitSystem: UnitSystem<Basis>,
+    ) =>
+        | string
+        | {
+              unitStr: string;
+              displayInFront: boolean;
+          };
 }
 
 /** The set of numeric operations required to fully represent a `GenericMeasure` for a given numeric type */

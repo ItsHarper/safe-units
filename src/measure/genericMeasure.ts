@@ -1,4 +1,4 @@
-import { type BasisType, UnitSystem } from "./unitSystem";
+import { type BasisType, UnitSymbol, UnitSystem } from "./unitSystem";
 import { CubeUnit, DivideUnits, MultiplyUnits, ReciprocalUnit, SquareUnit, Unit } from "./unitTypeArithmetic";
 
 export interface MeasureFormatter<N> {
@@ -37,7 +37,7 @@ export interface GenericMeasure<N, Basis extends BasisType, U extends Unit<Basis
     /** The unit system of this measure */
     readonly unitSystem: UnitSystem<Basis>;
     /** The symbol of the unit this measure represents (e.g. 0.3048 m = 1 ft) */
-    readonly symbol?: string | undefined;
+    readonly symbol?: UnitSymbol | undefined;
 
     /**
      * Adds this measure to another measure with the same unit.
@@ -199,7 +199,7 @@ export interface GenericMeasure<N, Basis extends BasisType, U extends Unit<Basis
      * Adds a symbol to this measure.
      * @param symbol the symbol of the unit represented by this measure
      */
-    withSymbol(symbol: string | undefined): GenericMeasure<N, Basis, U>;
+    withSymbol(symbol: UnitSymbol | undefined): GenericMeasure<N, Basis, U>;
 
     /** Shallow copies this measure instance. */
     clone(): GenericMeasure<N, Basis, U>;

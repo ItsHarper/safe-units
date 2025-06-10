@@ -1,6 +1,6 @@
 import { defaultFormatUnit } from "./format";
 import { GenericMeasure, MeasureFormatter, NumericOperations } from "./genericMeasure";
-import { type BasisType, UnitSystem } from "./unitSystem";
+import { type BasisType, UnitSymbol, UnitSystem } from "./unitSystem";
 import { DivideUnits, MultiplyUnits, ReciprocalUnit, SquareUnit, Unit, CubeUnit } from "./unitTypeArithmetic";
 
 interface GenericMeasureClass<N> {
@@ -8,7 +8,7 @@ interface GenericMeasureClass<N> {
         value: N,
         unit: U,
         unitSystem: UnitSystem<Basis>,
-        symbol?: string,
+        symbol?: UnitSymbol,
     ) => GenericMeasure<N, Basis, U>;
     isMeasure: (value: unknown) => value is GenericMeasure<N, any, any>;
 }
@@ -33,7 +33,7 @@ export function createMeasureClass<N>(num: NumericOperations<N>): GenericMeasure
             public readonly value: N,
             public readonly unit: U,
             public readonly unitSystem: UnitSystem<Basis>,
-            public readonly symbol?: string,
+            public readonly symbol?: UnitSymbol,
         ) {}
 
         // Arithmetic
@@ -160,7 +160,7 @@ export function createMeasureClass<N>(num: NumericOperations<N>): GenericMeasure
             return num.div(this.value, unit.value);
         }
 
-        public withSymbol(symbol: string | undefined): GenericMeasure<N, Basis, U> {
+        public withSymbol(symbol: UnitSymbol | undefined): GenericMeasure<N, Basis, U> {
             return new Measure(this.value, this.unit, this.unitSystem, symbol);
         }
 

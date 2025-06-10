@@ -1,7 +1,7 @@
 import { GenericMeasure, NumericOperations } from "./genericMeasure";
 import { createMeasureClass } from "./genericMeasureClass";
 import { GenericMeasureStatic, getGenericMeasureStaticMethods } from "./genericMeasureStatic";
-import { type BasisType, UnitSystem } from "./unitSystem";
+import { type BasisType, UnitSymbol, UnitSystem } from "./unitSystem";
 import { DimensionUnit, DimensionlessUnit, Unit } from "./unitTypeArithmetic";
 
 /** The functions needed to construct a measure of a given numeric type */
@@ -19,7 +19,7 @@ interface GenericMeasureFactory<N> {
     dimension<Basis extends BasisType, Dimension extends keyof Basis>(
         unitSystem: UnitSystem<Basis>,
         dimension: Dimension,
-        symbol?: string,
+        symbol?: UnitSymbol,
     ): GenericMeasure<N, Basis, DimensionUnit<Basis, Dimension>>;
 
     /**
@@ -43,7 +43,7 @@ interface GenericMeasureFactory<N> {
     of<Basis extends BasisType, U extends Unit<Basis>>(
         value: N,
         quantity: GenericMeasure<N, Basis, U>,
-        symbol?: string,
+        symbol?: UnitSymbol,
     ): GenericMeasure<N, Basis, U>;
 }
 

@@ -1,7 +1,7 @@
-import { type BasisType, UnitSystem } from "./unitSystem";
+import { type BasisType, UnitSymbol, UnitSystem } from "./unitSystem";
 import { Unit } from "./unitTypeArithmetic";
 
-type SymbolAndExponent = [symbol: string, exponent: number];
+type SymbolAndExponent = [symbol: UnitSymbol, exponent: number];
 
 export function defaultFormatUnit<Basis extends BasisType>(unit: Unit<Basis>, unitSystem: UnitSystem<Basis>): string {
     const positive: SymbolAndExponent[] = [];

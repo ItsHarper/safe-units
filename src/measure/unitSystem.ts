@@ -8,10 +8,15 @@ import {
 } from "./unitTypeArithmetic";
 
 /**
+ * The symbol for a particular unit (for example, "g" for the unit grams).
+ */
+export type UnitSymbol = string;
+
+/**
  * The keys of a type system's basis are the names of the dimensions, and the values are the symbols
  * of each dimension's base unit.
  */
-export type BasisType = Record<string, string>;
+export type BasisType = Record<string, UnitSymbol>;
 
 type UnitSystemResult<Basis extends BasisType> = [Basis[keyof Basis]] extends [string]
     ? UnitSystem<Basis>
@@ -68,7 +73,7 @@ export class UnitSystem<Basis extends BasisType> implements UnitSystem<Basis> {
     }
 
     /** @returns the symbol of the base unit of a given dimension. */
-    public getSymbol(dimension: keyof Basis): string {
+    public getSymbol(dimension: keyof Basis): UnitSymbol {
         const symbol = this.symbols[dimension];
         if (typeof symbol === "string") {
             return symbol;

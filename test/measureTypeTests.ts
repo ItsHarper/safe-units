@@ -6,6 +6,7 @@ const Basis = {
     length: "m",
     mass: "kg",
     time: "s",
+    price: { symbol: "$", displayInFront: true },
 } as const;
 
 type Basis = typeof Basis;
@@ -17,40 +18,45 @@ type TestMeasure<U extends Unit<Basis>> = GenericMeasure<number, TestUnitSystem,
 
 // Valid usages
 
-expectTrue(value(Measure.dimension(unitSystem, "length")).hasType<TestMeasure<{ length: 1; mass: 0; time: 0 }>>());
+expectTrue(
+    value(Measure.dimension(unitSystem, "length")).hasType<TestMeasure<{ length: 1; mass: 0; time: 0; price: 0 }>>(),
+);
 
 const meters = Measure.dimension(unitSystem, "length");
-expectTrue(value(meters).hasType<TestMeasure<{ length: 1; mass: 0; time: 0 }>>());
+expectTrue(value(meters).hasType<TestMeasure<{ length: 1; mass: 0; time: 0; price: 0 }>>());
 
 const seconds = Measure.dimension(unitSystem, "time");
-expectTrue(value(seconds).hasType<TestMeasure<{ length: 0; mass: 0; time: 1 }>>());
+expectTrue(value(seconds).hasType<TestMeasure<{ length: 0; mass: 0; time: 1; price: 0 }>>());
+
+const dollars = Measure.dimension(unitSystem, "price");
+expectTrue(value(dollars).hasType<TestMeasure<{ length: 0; mass: 0; time: 0; price: 1 }>>());
 
 const kilograms = Measure.dimension(unitSystem, "mass");
 const newtons = kilograms.times(meters.per(seconds.squared()));
-expectTrue(value(newtons).hasType<TestMeasure<{ length: 1; mass: 1; time: -2 }>>());
+expectTrue(value(newtons).hasType<TestMeasure<{ length: 1; mass: 1; time: -2; price: 0 }>>());
 
 const acceleration = newtons.over(kilograms);
-expectTrue(value(acceleration).hasType<TestMeasure<{ length: 1; mass: 0; time: -2 }>>());
+expectTrue(value(acceleration).hasType<TestMeasure<{ length: 1; mass: 0; time: -2; price: 0 }>>());
 
 const absement = meters.times(seconds);
-expectTrue(value(absement).hasType<TestMeasure<{ length: 1; mass: 0; time: 1 }>>());
+expectTrue(value(absement).hasType<TestMeasure<{ length: 1; mass: 0; time: 1; price: 0 }>>());
 
 const velocity = meters.over(seconds);
-expectTrue(value(velocity).hasType<TestMeasure<{ length: 1; mass: 0; time: -1 }>>());
+expectTrue(value(velocity).hasType<TestMeasure<{ length: 1; mass: 0; time: -1; price: 0 }>>());
 
-type TestLength = TestMeasure<{ length: 1; mass: 0; time: 0 }>;
+type TestLength = TestMeasure<{ length: 1; mass: 0; time: 0; price: 0 }>;
 expectTrue(value(meters.plus(meters)).hasType<TestLength>());
 expectTrue(value(meters.minus(meters)).hasType<TestLength>());
 expectTrue(value(meters.negate()).hasType<TestLength>());
 expectTrue(value(meters.scale(2)).hasType<TestLength>());
 
-expectTrue(value(velocity.squared()).hasType<TestMeasure<{ length: 2; mass: 0; time: -2 }>>());
-expectTrue(value(absement.cubed()).hasType<TestMeasure<{ length: 3; mass: 0; time: 3 }>>());
-expectTrue(value(absement.inverse()).hasType<TestMeasure<{ length: -1; mass: 0; time: -1 }>>());
+expectTrue(value(velocity.squared()).hasType<TestMeasure<{ length: 2; mass: 0; time: -2; price: 0 }>>());
+expectTrue(value(absement.cubed()).hasType<TestMeasure<{ length: 3; mass: 0; time: 3; price: 0 }>>());
+expectTrue(value(absement.inverse()).hasType<TestMeasure<{ length: -1; mass: 0; time: -1; price: 0 }>>());
 
 const volume = meters.cubed();
-expectTrue(value(volume.times(volume)).hasType<TestMeasure<{ length: 6; mass: 0; time: 0 }>>());
-expectTrue(value(volume.cubed().inverse()).hasType<TestMeasure<{ length: -9; mass: 0; time: 0 }>>());
+expectTrue(value(volume.times(volume)).hasType<TestMeasure<{ length: 6; mass: 0; time: 0; price: 0 }>>());
+expectTrue(value(volume.cubed().inverse()).hasType<TestMeasure<{ length: -9; mass: 0; time: 0; price: 0 }>>());
 
 // Error usages
 
@@ -80,9 +86,26 @@ Length.plus(length);
 
 // Unit system tests
 
-const validUnitSystem = UnitSystem.from({ length: "m", mass: "kg", time: "s" } as const);
-expectTrue(value(validUnitSystem).hasType<UnitSystem<{ length: "m"; mass: "kg"; time: "s" }>>());
+const validUnitSystem = UnitSystem.from({
+    length: "m",
+    mass: "kg",
+    time: { symbol: "s" },
+    price: { symbol: "$", displayInFront: true },
+} as const);
+expectTrue(
+    value(validUnitSystem).hasType<
+        UnitSystem<{ length: "m"; mass: "kg"; time: { symbol: "s" }; price: { symbol: "$"; displayInFront: true } }>
+    >(),
+);
 
-const errorBasis = { length: "m", mass: 3, time: "kg" };
-// @ts-expect-error errorBasis is not a valid basis for a type system
-const errorUnitSystem = UnitSystem.from(errorBasis);
+// @ts-expect-error The mass dimension has a number as its symbol
+UnitSystem.from({ length: "m", mass: 3, time: { symbol: "s" }, price: { symbol: "$", displayInFront: true } });
+
+// @ts-expect-error The time dimension (which has an object as its value) has a number as its symbol
+UnitSystem.from({ length: "m", mass: "kg", time: { symbol: 4 }, price: { symbol: "$", displayInFront: true } });
+
+// @ts-expect-error The price dimension has no symbol
+UnitSystem.from({ length: "m", mass: "kg", time: { symbol: "s" }, price: { displayInFront: true } });
+
+// @ts-expect-error The price dimension sets displayInFront to a number
+UnitSystem.from({ length: "m", mass: "kg", time: { symbol: "s" }, price: { symbol: "$", displayInFront: 3 } });

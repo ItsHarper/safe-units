@@ -10,7 +10,7 @@ import {
 /**
  * The symbol for a particular unit (for example, "g" for the unit grams).
  */
-export type UnitSymbol = string;
+export type UnitSymbol = string | { symbol: string };
 
 /**
  * The keys of a type system's basis are the names of the dimensions, and the values are the symbols
@@ -18,7 +18,7 @@ export type UnitSymbol = string;
  */
 export type BasisType = Record<string, UnitSymbol>;
 
-type UnitSystemResult<Basis extends BasisType> = [Basis[keyof Basis]] extends [string]
+type UnitSystemResult<Basis extends BasisType> = Basis extends BasisType
     ? UnitSystem<Basis>
     : `Dimension '${NonStringValuedKeys<Basis>}' does not have a valid symbol`;
 
@@ -76,6 +76,10 @@ export class UnitSystem<Basis extends BasisType> implements UnitSystem<Basis> {
     public getSymbol(dimension: keyof Basis): UnitSymbol {
         const symbol = this.symbols[dimension];
         if (typeof symbol === "string") {
+            return symbol;
+        }
+
+        if (typeof symbol === "object" && typeof symbol.symbol === "string") {
             return symbol;
         }
 

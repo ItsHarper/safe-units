@@ -234,7 +234,7 @@ describe("Number measures", () => {
         });
     });
 
-    describe("formatting", () => {
+    describe("formatting for included units", () => {
         function expectFormat(unit: Measure<any, any>, formatted: string, formatter?: MeasureFormatter<number>): void {
             expect(unit.toString(formatter)).toBe(formatted);
         }
@@ -341,6 +341,36 @@ describe("Number measures", () => {
                     formatUnit: () => "meters",
                 }),
             ).toBe("20000 meters");
+        });
+    });
+
+    describe("formatting for custom units", () => {
+        function expectFormat(unit: Measure<any, any>, formatted: string, formatter?: MeasureFormatter<number>): void {
+            expect(unit.toString(formatter)).toBe(formatted);
+        }
+
+        const UnitSystemDefinedUsingObjects = UnitSystem.from({
+            time: { symbol: "d" },
+        });
+
+        const days = Measure.dimension(UnitSystemDefinedUsingObjects, "time"); // Object-defined symbol
+        const years = Measure.of(365, days, "y"); // String-defined symbol
+
+        it("should format object-defined units", () => {
+            expectFormat(days, "1 d");
+        });
+
+        it("should format when converting to an object-defined unit", () => {
+            expect(years.in(days)).toBe("365 d");
+        });
+
+        it("should format when converting from an object-defined unit", () => {
+            expect(Measure.of(730, days).in(years)).toBe("2 y");
+        });
+
+        it("should format when converting between object-defined units", () => {
+            const weeks = Measure.of(7, days, { symbol: "w" });
+            expect(Measure.of(14, days).in(weeks)).toBe("2 w");
         });
     });
 

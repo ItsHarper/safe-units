@@ -153,7 +153,8 @@ export function createMeasureClass<N>(num: NumericOperations<N>): GenericMeasure
             }
             const { formatValue } = getFormatter(formatter);
             const value = formatValue(num.div(this.value, unit.value));
-            return `${value} ${unit.symbol}`;
+            const symbolStr: string = typeof unit.symbol === "string" ? unit.symbol : unit.symbol.symbol;
+            return `${value} ${symbolStr}`;
         }
 
         public valueIn(unit: GenericMeasure<N, Basis, U>): N {

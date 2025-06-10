@@ -42,8 +42,9 @@ function orderDimensions([leftSymbol]: SymbolAndExponent, [rightSymbol]: SymbolA
 function formatDimensions(dimensions: SymbolAndExponent[]): string {
     return dimensions
         .map(([symbol, exponent]) => {
+            const symbolStr: string = typeof symbol === "string" ? symbol : symbol.symbol;
             const exponentStr = exponent !== 1 ? `^${exponent}` : "";
-            return `${symbol}${exponentStr}`;
+            return `${symbolStr}${exponentStr}`;
         })
         .join(" * ");
 }

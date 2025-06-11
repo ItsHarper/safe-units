@@ -1,4 +1,4 @@
-import { type BasisType, UnitSymbol, UnitSystem } from "./unitSystem";
+import {type BasisType, UnitSymbol, type UnitSymbolWithOptions, UnitSystem} from "./unitSystem";
 import { Unit } from "./unitTypeArithmetic";
 
 type SymbolAndExponent = [symbol: UnitSymbol, exponent: number];
@@ -6,10 +6,9 @@ type SymbolAndExponent = [symbol: UnitSymbol, exponent: number];
 export function defaultFormatUnit<Basis extends BasisType>(
     unit: Unit<Basis>,
     unitSystem: UnitSystem<Basis>,
-): {
-    unitStr: string;
-    displayInFront: boolean;
-} {
+): UnitSymbolWithOptions {
+    const defaultSymbolOptions = { displayInFront: false, displayWithoutGap: false };
+
     const positive: SymbolAndExponent[] = [];
     const negative: SymbolAndExponent[] = [];
     unitSystem.getDimensions().forEach(dimension => {
@@ -22,34 +21,39 @@ export function defaultFormatUnit<Basis extends BasisType>(
     });
 
     if (positive.length === 0 && negative.length === 0) {
-        return { unitStr: "", displayInFront: false };
+        return { symbol: "", ...defaultSymbolOptions };
     }
 
     positive.sort(orderDimensions);
     negative.sort(orderDimensions);
 
     if (positive.length === 0) {
-        // Units that involve negative exponents are never displayed in front
-        return { unitStr: formatDimensions(negative), displayInFront: false };
+        // Units that involve division are always displayed with the default options
+        return { symbol: formatDimensions(negative), ...defaultSymbolOptions };
     }
 
     const numerator = formatDimensions(positive);
     if (negative.length === 0) {
-        let displayInFront = false;
         if (positive.length === 1) {
             const dimension = positive[0];
             const symbol = dimension[0];
             const exponent = dimension[1];
-            displayInFront = exponent === 1 && typeof symbol === "object" && symbol.displayInFront;
+            if (exponent === 1 && typeof symbol === "object") {
+                return {
+                    symbol: numerator,
+                    displayInFront: symbol.displayInFront,
+                    displayWithoutGap: symbol.displayWithoutGap,
+                };
+            }
         }
-        return { unitStr: numerator, displayInFront };
+        return { symbol: numerator, ...defaultSymbolOptions };
     }
 
     const denominator = formatDimensions(negative.map(negateDimension));
     return {
-        // Units that involve division are never displayed in front
-        unitStr: `${numerator} / ${maybeParenthesize(denominator, negative.length !== 1)}`,
-        displayInFront: false,
+        symbol: `${numerator} / ${maybeParenthesize(denominator, negative.length !== 1)}`,
+        // Units that involve division are always displayed with the default options
+        ...defaultSymbolOptions,
     };
 }
 

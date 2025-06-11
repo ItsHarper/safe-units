@@ -148,20 +148,25 @@ export function createMeasureClass<N>(num: NumericOperations<N>): GenericMeasure
 
             let unitStr: string;
             let displayInFront: boolean;
+            let gap: string;
             if (typeof unitFormatResult === "string") {
                 unitStr = unitFormatResult;
                 displayInFront = false;
+                gap = " ";
             } else {
-                unitStr = unitFormatResult.unitStr;
+                unitStr = unitFormatResult.symbol;
                 displayInFront = unitFormatResult.displayInFront;
+                gap = unitFormatResult.displayWithoutGap ? "" : " ";
             }
 
+            console.log(
+                `unitFormatResult=${JSON.stringify(unitFormatResult)} displayInFront=${displayInFront} gap="${gap}"`,
+            );
+
             if (displayInFront) {
-                // Units displayed in front typically shouldn't have a space before the number
-                return `${unitStr}${formatValue(this.value)}`;
+                return `${unitStr}${gap}${formatValue(this.value)}`;
             } else {
-                // Units displayed in back typically have a space before the unit
-                return `${formatValue(this.value)} ${unitStr}`.trimRight();
+                return `${formatValue(this.value)}${gap}${unitStr}`.trimRight();
             }
         }
 

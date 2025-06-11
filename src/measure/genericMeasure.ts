@@ -6,12 +6,7 @@ export interface MeasureFormatter<N> {
     formatUnit?: <Basis extends BasisType>(
         unit: Unit<Basis>,
         unitSystem: UnitSystem<Basis>,
-    ) =>
-        | string
-        | {
-              unitStr: string;
-              displayInFront: boolean;
-          };
+    ) => UnitSymbol;
 }
 
 /** The set of numeric operations required to fully represent a `GenericMeasure` for a given numeric type */

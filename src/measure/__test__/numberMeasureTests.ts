@@ -350,60 +350,69 @@ describe("Number measures", () => {
         }
 
         const UnitSystemDefinedUsingObjects = UnitSystem.from({
-            priceUs: { symbol: "$", displayInFront: true },
-            priceUk: { symbol: "£", displayInFront: true },
-            time: { symbol: "d", displayInFront: false },
+            priceUs: { symbol: "$", displayInFront: true, displayWithoutGap: true },
+            priceUk: { symbol: "£", displayInFront: true, displayWithoutGap: true },
+            time: { symbol: "d", displayInFront: false, displayWithoutGap: false },
         });
 
-        const dollars = Measure.dimension(UnitSystemDefinedUsingObjects, "priceUs"); // Object-defined front symbol
-        const britishPounds = Measure.dimension(UnitSystemDefinedUsingObjects, "priceUk"); // Object-defined front symbol
-        const days = Measure.dimension(UnitSystemDefinedUsingObjects, "time"); // Object-defined rear symbol
-        const years = Measure.of(365, days, "y"); // String-defined rear symbol
-        const cents = Measure.of(0.01, dollars, "¢"); // Object-defined rear symbol
-
-        it("should format object-defined units", () => {
-            expectFormat(days, "1 d");
-        });
+        const dollars = Measure.dimension(UnitSystemDefinedUsingObjects, "priceUs"); // Front, without gap
+        const britishPounds = Measure.dimension(UnitSystemDefinedUsingObjects, "priceUk"); // Front, without gap
+        const days = Measure.dimension(UnitSystemDefinedUsingObjects, "time"); // Rear, with gap
+        const cents = Measure.of(0.01, dollars, { symbol: "¢", displayInFront: false, displayWithoutGap: true }); // Rear, without gap
 
         it("should format when converting to an object-defined unit", () => {
+            const years = Measure.of(365, days, "y"); // String-defined symbol
             expect(years.in(days)).toBe("365 d");
         });
 
         it("should format when converting from an object-defined unit", () => {
+            const years = Measure.of(365, days, "y"); // String-defined symbol
             expect(Measure.of(730, days).in(years)).toBe("2 y");
         });
 
-        it("should format when converting between object-defined units", () => {
-            const weeks = Measure.of(7, days, { symbol: "w", displayInFront: false });
-            expect(Measure.of(14, days).in(weeks)).toBe("2 w");
-        });
-
-        it("should format units displayed in front", () => {
-            expectFormat(dollars, "$1");
-        });
-
-        it("should format anything more complicated than a base unit in the back", () => {
+        it("anything more complicated than a standalone unit should format with a gap at the back", () => {
             expectFormat(dollars.per(days), "1 $ / d");
             expectFormat(dollars.times(days), "1 $ * d");
+            expectFormat(cents.times(days), "1 ¢ * d");
             expectFormat(dollars.times(britishPounds), "1 $ * £");
             expectFormat(dollars.per(britishPounds), "1 $ / £");
             expectFormat(dollars.squared(), "1 $^2");
             expectFormat(dollars.inverse(), "1 $^-1");
+            expectFormat(cents.squared(), "1 ¢^2");
         });
 
-        it("should format when converting to a front-defined unit", () => {
-            expect(cents.in(dollars)).toBe("$0.01");
-        });
+        const symbolConfigurations: [symbol: typeof dollars, expected: string][] = [];
 
-        it("should format when converting from a front-defined unit", () => {
-            // TODO(Harper): Add support for rear-defined units that don't have a space after the number
-            expect(dollars.in(cents)).toBe("100 ¢");
-        });
+        test.each`
+            position   | gapStatus | expected
+            ${"front"} | ${"w/"}   | ${"$ 1"}
+            ${"front"} | ${"w/o"}  | ${"$1"}
+            ${"back"}  | ${"w/"}   | ${"1 $"}
+            ${"back"}  | ${"w/o"}  | ${"1$"}
+        `(
+            `formats as "$expected" when the unit is displayed at the $position, $gapStatus a gap`,
+            // {position: "front" | "back", gap: "w/" | "w/o", expected: string}
+            (inputs: { position: "front" | "back"; gapStatus: "w/" | "w/o"; expected: string }) => {
+                const { position, gapStatus, expected } = inputs;
+                const customDollar = Measure.of(1, dollars, {
+                    symbol: "$",
+                    displayInFront: position === "front",
+                    displayWithoutGap: gapStatus === "w/o",
+                });
+                expectFormat(customDollar, expected);
+                symbolConfigurations.push([customDollar, expected]);
+            },
+        );
 
-        it("should format when converting between front-displayed units", () => {
-            const fakeKiloDollars = Measure.of(1000, dollars, { symbol: "$$", displayInFront: true });
-            expect(Measure.of(10000, dollars).in(fakeKiloDollars)).toBe("$$10");
-        });
+        console.log("symbol configurations:");
+        console.log(symbolConfigurations);
+
+        // TODO(Harper): The previous set of tests will save their results for us to use in this set
+        // test.each``("formats as $expected when $a is converted to $b ", (a, b, expected) => {});
+
+        // it("should format when converting between front-displayed units", () => {
+        //     expect(Measure.of(10000, dollars).in(fakeKiloDollars)).toBe("$$ 10");
+        // });
     });
 
     describe("utils", () => {

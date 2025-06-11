@@ -13,7 +13,13 @@ import {
  * Can be provided either as a string directly, or as an object that combines
  * the symbol with options for how it should be used.
  */
-export type UnitSymbol = string | { symbol: string; displayInFront: boolean };
+export type UnitSymbol = string | UnitSymbolWithOptions;
+
+export interface UnitSymbolWithOptions {
+    symbol: string;
+    displayInFront: boolean;
+    displayWithoutGap: boolean;
+}
 
 /**
  * The keys of a type system's basis are the names of the dimensions, and the values are the symbols
